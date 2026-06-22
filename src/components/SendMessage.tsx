@@ -4,12 +4,11 @@ import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 
 const MAX_LENGTH = 500;
 
-const style = {
-  form: `relative flex h-14 w-full shrink-0 items-stretch bg-black text-xl`,
-  input: `h-14 w-full border-none bg-gray-500 px-4 text-xl text-white outline-none focus:ring-2 focus:ring-inset focus:ring-green-400`,
-  button: `w-24 shrink-0 bg-green-500 text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-600`,
-  error: `absolute -top-8 left-0 right-0 rounded bg-black/60 px-2 py-1 text-sm text-red-300`,
-};
+const SendIcon = () => (
+  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden>
+    <path d="M2 21l21-9L2 3v7l15 2-15 2v7z" />
+  </svg>
+);
 
 interface SendMessageProps {
   roomId: string;
@@ -52,25 +51,32 @@ const SendMessage = ({ roomId }: SendMessageProps) => {
   };
 
   return (
-    <form onSubmit={sendMessage} className={style.form}>
-      {error && <p className={style.error}>{error}</p>}
+    <form
+      onSubmit={sendMessage}
+      className="relative flex shrink-0 items-center gap-2 border-t border-white/10 bg-slate-900/70 p-3 backdrop-blur-xl"
+    >
+      {error && (
+        <p className="absolute -top-9 left-3 right-3 rounded-md bg-red-500/90 px-3 py-1 text-sm text-white">
+          {error}
+        </p>
+      )}
       <input
         value={input}
         onChange={(e) => setInput(e.target.value)}
-        className={style.input}
+        className="flex-1 rounded-full bg-white/10 px-4 py-2.5 text-base text-white placeholder-white/40 outline-none focus:ring-2 focus:ring-cyan-400"
         type="text"
         maxLength={MAX_LENGTH}
-        placeholder="Message"
-        id="message"
+        placeholder={`Message #${roomId}`}
         aria-label="Message"
         autoComplete="off"
       />
       <button
-        className={style.button}
         type="submit"
         disabled={sending || !input.trim()}
+        aria-label="Send message"
+        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 text-white shadow-lg transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
       >
-        {sending ? "…" : "Send"}
+        <SendIcon />
       </button>
     </form>
   );

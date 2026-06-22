@@ -13,64 +13,65 @@ const SidebarNav = ({ activeRoomId, onSelectRoom }: SidebarNavProps) => {
     <aside
       className={`${
         open ? "w-64" : "w-20"
-      } relative h-screen shrink-0 bg-slate-700 p-5 pt-8 duration-300`}
+      } flex h-screen shrink-0 flex-col border-r border-white/10 bg-slate-900/80 backdrop-blur-xl duration-300`}
     >
-      <button
-        type="button"
-        aria-label={open ? "Collapse sidebar" : "Expand sidebar"}
-        onClick={() => setOpen(!open)}
-        className={`absolute -right-3 top-9 flex h-7 w-7 items-center justify-center rounded-full border-2 border-slate-700 bg-white text-slate-700 ${
-          !open && "rotate-180"
+      <div
+        className={`flex items-center gap-2 border-b border-white/10 p-4 ${
+          open ? "justify-between" : "justify-center"
         }`}
       >
-        ‹
-      </button>
-
-      <div className="flex items-center gap-x-4">
-        <span className="text-3xl">💬</span>
-        <h1
-          className={`origin-left text-2xl font-bold text-white duration-200 ${
-            !open && "scale-0"
-          }`}
+        {open && (
+          <div className="flex items-center gap-2 overflow-hidden">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-blue-500 text-lg shadow-lg">
+              💬
+            </div>
+            <h1 className="bg-gradient-to-r from-cyan-300 to-blue-400 bg-clip-text text-lg font-bold text-transparent">
+              Chat App
+            </h1>
+          </div>
+        )}
+        <button
+          type="button"
+          aria-label={open ? "Collapse sidebar" : "Expand sidebar"}
+          onClick={() => setOpen(!open)}
+          className="rounded-lg p-2 text-lg leading-none text-white/70 hover:bg-white/10 hover:text-white"
         >
-          Chat App
-        </h1>
+          {open ? "«" : "»"}
+        </button>
       </div>
 
-      <hr className="mt-6 rounded-md border-2 border-white/30" />
-
-      <p
-        className={`mt-4 text-xs font-semibold uppercase tracking-wider text-white/50 ${
-          !open && "hidden"
-        }`}
-      >
-        Channels
-      </p>
-
-      <ul className="mt-2 space-y-1">
-        {ROOMS.map((room) => {
-          const isActive = room.id === activeRoomId;
-          return (
-            <li key={room.id}>
-              <button
-                type="button"
-                onClick={() => onSelectRoom(room.id)}
-                aria-current={isActive ? "page" : undefined}
-                className={`flex w-full items-center gap-x-4 rounded-md p-2 text-left text-lg font-medium duration-200 ${
-                  isActive
-                    ? "bg-slate-500 text-white"
-                    : "text-gray-200 hover:bg-slate-600"
-                }`}
-              >
-                <span className="w-6 shrink-0 text-center text-xl">
-                  {room.icon}
-                </span>
-                <span className={`${!open && "hidden"}`}>{room.name}</span>
-              </button>
-            </li>
-          );
-        })}
-      </ul>
+      <nav className="flex-1 overflow-y-auto p-3">
+        {open && (
+          <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-white/40">
+            Channels
+          </p>
+        )}
+        <ul className="space-y-1">
+          {ROOMS.map((room) => {
+            const isActive = room.id === activeRoomId;
+            return (
+              <li key={room.id}>
+                <button
+                  type="button"
+                  onClick={() => onSelectRoom(room.id)}
+                  aria-current={isActive ? "page" : undefined}
+                  title={room.name}
+                  className={`flex w-full items-center rounded-xl p-2.5 text-sm font-medium transition ${
+                    open ? "gap-3" : "justify-center"
+                  } ${
+                    isActive
+                      ? "bg-gradient-to-r from-cyan-500/25 to-blue-500/25 text-white ring-1 ring-inset ring-white/10"
+                      : "text-white/70 hover:bg-white/5 hover:text-white"
+                  }`}
+                >
+                  <span className="text-lg">{room.icon}</span>
+                  {open && <span className="truncate">{room.name}</span>}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
     </aside>
   );
 };

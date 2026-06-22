@@ -19,7 +19,7 @@ interface ChatProps {
 }
 
 const style = {
-  scroll: `flex-1 overflow-y-auto backdrop-blur-sm bg-black/20`,
+  scroll: `flex-1 overflow-y-auto bg-slate-900/40 backdrop-blur-sm`,
   inner: `flex min-h-full flex-col justify-end px-2 py-4`,
   state: `flex flex-1 flex-col items-center justify-center gap-2 py-16 text-white/70`,
   spinner: `h-6 w-6 animate-spin rounded-full border-2 border-white/30 border-t-white`,
