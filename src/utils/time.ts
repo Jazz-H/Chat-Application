@@ -1,28 +1,44 @@
 import type { Timestamp } from "firebase/firestore";
 
+function sameCalendarDay(a: Date, b: Date): boolean {
+  return a.toDateString() === b.toDateString();
+}
+
 /**
- * Convert a Firestore Timestamp (or null while serverTimestamp() resolves)
- * into a short, human-friendly relative string: "now", "5m", "3h", "2d",
- * falling back to a localized date for anything older than a week.
+ * Whether two messages fall on the same calendar day. Pending (null)
+ * timestamps are treated as "same day" so a just-sent message groups with its
+ * neighbors instead of triggering a spurious date separator.
  */
-export function formatRelativeTime(
-  timestamp: Timestamp | null | undefined
-): string {
-  if (!timestamp) {
-    // serverTimestamp() is still pending on a just-sent (optimistic) message.
-    return "now";
-  }
+export function isSameDay(a: Timestamp | null, b: Timestamp | null): boolean {
+  if (!a || !b) return true;
+  return sameCalendarDay(a.toDate(), b.toDate());
+}
+
+/** Short clock time, e.g. "9:41 AM". */
+export function formatClockTime(timestamp: Timestamp | null): string {
+  if (!timestamp) return "now";
+  return timestamp.toDate().toLocaleTimeString(undefined, {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+/** Date-separator label: "Today", "Yesterday", or a localized date. */
+export function formatDaySeparator(timestamp: Timestamp | null): string {
+  if (!timestamp) return "Today";
 
   const date = timestamp.toDate();
-  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+  const now = new Date();
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
 
-  if (seconds < 45) return "now";
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h`;
-  if (seconds < 604800) return `${Math.floor(seconds / 86400)}d`;
+  if (sameCalendarDay(date, now)) return "Today";
+  if (sameCalendarDay(date, yesterday)) return "Yesterday";
 
   return date.toLocaleDateString(undefined, {
+    weekday: "short",
     month: "short",
     day: "numeric",
+    year: "numeric",
   });
 }

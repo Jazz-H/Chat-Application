@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import Message from "./Message";
-import { db } from "../firebase";
+import { auth, db } from "../firebase";
 import {
   query,
   collection,
@@ -9,6 +9,7 @@ import {
   onSnapshot,
 } from "firebase/firestore";
 import type { ChatMessage } from "../types";
+import { isSameDay, formatDaySeparator } from "../utils/time";
 
 const PAGE_SIZE = 25;
 
@@ -20,7 +21,7 @@ interface ChatProps {
 
 const style = {
   scroll: `flex-1 overflow-y-auto bg-black/40 backdrop-blur-sm`,
-  inner: `flex min-h-full flex-col justify-end px-2 py-4`,
+  inner: `flex min-h-full flex-col justify-end py-4`,
   state: `flex flex-1 flex-col items-center justify-center gap-2 py-16 text-white/70`,
   spinner: `h-6 w-6 animate-spin rounded-full border-2 border-white/30 border-t-white`,
   loadMore: `mx-auto my-3 rounded-full bg-white/10 px-4 py-1 text-sm text-white/80 hover:bg-white/20 disabled:opacity-50`,
@@ -118,9 +119,36 @@ const Chat = ({ roomId }: ChatProps) => {
                 Load older messages
               </button>
             )}
-            {messages.map((message) => (
-              <Message key={message.id} message={message} />
-            ))}
+            {messages.map((message, i) => {
+              const prev = i > 0 ? messages[i - 1] : null;
+              const next = i < messages.length - 1 ? messages[i + 1] : null;
+              const isOwn = message.uid === auth.currentUser?.uid;
+              const showDate =
+                !prev || !isSameDay(prev.timestamp, message.timestamp);
+              const startGroup = showDate || prev?.uid !== message.uid;
+              const endGroup =
+                !next ||
+                next.uid !== message.uid ||
+                !isSameDay(message.timestamp, next.timestamp);
+
+              return (
+                <div key={message.id}>
+                  {showDate && (
+                    <div className="my-4 flex items-center justify-center">
+                      <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white/60">
+                        {formatDaySeparator(message.timestamp)}
+                      </span>
+                    </div>
+                  )}
+                  <Message
+                    message={message}
+                    isOwn={isOwn}
+                    startGroup={startGroup}
+                    endGroup={endGroup}
+                  />
+                </div>
+              );
+            })}
           </>
         )}
         <span ref={bottomRef}></span>
