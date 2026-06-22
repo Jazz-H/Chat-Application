@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import Message from "./Message";
-import SendMessage from "./SendMessage";
 import { db } from "../firebase";
 import {
   query,
@@ -9,7 +8,6 @@ import {
   limit,
   onSnapshot,
 } from "firebase/firestore";
-import SidebarNav from "./SidebarNav";
 import type { ChatMessage } from "../types";
 
 const PAGE_SIZE = 25;
@@ -17,8 +15,9 @@ const PAGE_SIZE = 25;
 type Status = "loading" | "ready" | "error";
 
 const style = {
-  main: `flex flex-col z-0 px-2 pb-2`,
-  state: `flex flex-col items-center justify-center gap-2 py-16 text-white/70`,
+  scroll: `flex-1 overflow-y-auto backdrop-blur-sm bg-black/20`,
+  inner: `flex min-h-full flex-col justify-end px-2 py-4`,
+  state: `flex flex-1 flex-col items-center justify-center gap-2 py-16 text-white/70`,
   spinner: `h-6 w-6 animate-spin rounded-full border-2 border-white/30 border-t-white`,
   loadMore: `mx-auto my-3 rounded-full bg-white/10 px-4 py-1 text-sm text-white/80 hover:bg-white/20 disabled:opacity-50`,
 };
@@ -75,53 +74,54 @@ const Chat = () => {
     }
   }, [messages]);
 
+  if (status === "loading") {
+    return (
+      <div className={style.scroll}>
+        <div className={style.state}>
+          <div className={style.spinner} />
+          <p>Loading messages…</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === "error") {
+    return (
+      <div className={style.scroll}>
+        <div className={style.state}>
+          <p>Couldn’t load messages. Please try again.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <>
-      <SidebarNav />
-      <div className="backdrop-blur-sm bg-black/20 mt-20 shadow rounded-2xl">
-        <main className={style.main}>
-          {status === "loading" && (
-            <div className={style.state}>
-              <div className={style.spinner} />
-              <p>Loading messages…</p>
-            </div>
-          )}
-
-          {status === "error" && (
-            <div className={style.state}>
-              <p>Couldn’t load messages. Please try again.</p>
-            </div>
-          )}
-
-          {status === "ready" && messages.length === 0 && (
-            <div className={style.state}>
-              <p className="text-lg">No messages yet</p>
-              <p className="text-sm">Be the first to say hi 👋</p>
-            </div>
-          )}
-
-          {status === "ready" && messages.length > 0 && (
-            <>
-              {hasMore && (
-                <button
-                  type="button"
-                  className={style.loadMore}
-                  onClick={() => setMessageLimit((n) => n + PAGE_SIZE)}
-                >
-                  Load older messages
-                </button>
-              )}
-              {messages.map((message) => (
-                <Message key={message.id} message={message} />
-              ))}
-            </>
-          )}
-        </main>
-
-        <SendMessage />
+    <div className={style.scroll}>
+      <div className={style.inner}>
+        {messages.length === 0 ? (
+          <div className={style.state}>
+            <p className="text-lg">No messages yet</p>
+            <p className="text-sm">Be the first to say hi 👋</p>
+          </div>
+        ) : (
+          <>
+            {hasMore && (
+              <button
+                type="button"
+                className={style.loadMore}
+                onClick={() => setMessageLimit((n) => n + PAGE_SIZE)}
+              >
+                Load older messages
+              </button>
+            )}
+            {messages.map((message) => (
+              <Message key={message.id} message={message} />
+            ))}
+          </>
+        )}
         <span ref={bottomRef}></span>
       </div>
-    </>
+    </div>
   );
 };
 
