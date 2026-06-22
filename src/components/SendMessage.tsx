@@ -2,7 +2,7 @@ import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { auth, db } from "../firebase";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { useTyping } from "../hooks/useTyping";
-import { uploadRoomImage, MAX_IMAGE_BYTES } from "../lib/storage";
+import { compressImageToDataUrl, MAX_IMAGE_BYTES } from "../lib/image";
 
 const MAX_LENGTH = 500;
 
@@ -51,7 +51,7 @@ const SendMessage = ({ roomId }: SendMessageProps) => {
       return;
     }
     if (chosen.size > MAX_IMAGE_BYTES) {
-      setError("Image must be under 5 MB.");
+      setError("Image must be under 10 MB.");
       return;
     }
     setError("");
@@ -83,7 +83,7 @@ const SendMessage = ({ roomId }: SendMessageProps) => {
 
     try {
       let imageUrl: string | undefined;
-      if (file) imageUrl = await uploadRoomImage(roomId, file);
+      if (file) imageUrl = await compressImageToDataUrl(file);
 
       await addDoc(collection(db, "rooms", roomId, "messages"), {
         text,
