@@ -7,6 +7,7 @@ import {
   deleteMessage,
   editMessage,
 } from "../lib/messageActions";
+import ConfirmDialog from "./ConfirmDialog";
 import type { ChatMessage } from "../types";
 
 const QUICK_REACTIONS = ["👍", "❤️", "😂", "🎉", "😮", "😢"];
@@ -90,6 +91,7 @@ const Message = ({
   const [editing, setEditing] = useState(false);
   const [editText, setEditText] = useState(message.text);
   const [picker, setPicker] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const react = (emoji: string) => {
     if (uid) {
@@ -100,10 +102,11 @@ const Message = ({
     setPicker(false);
   };
 
-  const remove = () => {
-    if (window.confirm("Delete this message?")) {
-      deleteMessage(roomId, message.id).catch(() => undefined);
-    }
+  const remove = () => setConfirmOpen(true);
+
+  const confirmDelete = () => {
+    deleteMessage(roomId, message.id).catch(() => undefined);
+    setConfirmOpen(false);
   };
 
   const saveEdit = (e: FormEvent) => {
@@ -280,6 +283,17 @@ const Message = ({
           </span>
         )}
       </div>
+
+      {confirmOpen && (
+        <ConfirmDialog
+          title="Delete message"
+          message="This message will be permanently deleted."
+          confirmLabel="Delete"
+          destructive
+          onConfirm={confirmDelete}
+          onCancel={() => setConfirmOpen(false)}
+        />
+      )}
     </div>
   );
 };
