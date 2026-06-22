@@ -5,10 +5,10 @@ import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 const MAX_LENGTH = 500;
 
 const style = {
-  form: `h-14 w-full max-w-[728px] rounded-md sticky bg-black flex items-stretch text-xl absolute bottom-0 z-50`,
-  input: `w-full h-14 rounded-md text-xl bg-gray-500 text-white outline-none focus:ring-2 focus:ring-green-400 py-0 px-4 border-none`,
-  button: `w-[14%] bg-green-500 hover:bg-green-700 rounded-md text-white z-50 disabled:bg-gray-600 disabled:cursor-not-allowed`,
-  error: `absolute -top-8 left-0 right-0 text-sm text-red-300 bg-black/60 rounded px-2 py-1`,
+  form: `relative flex h-14 w-full shrink-0 items-stretch bg-black text-xl`,
+  input: `h-14 w-full border-none bg-gray-500 px-4 text-xl text-white outline-none focus:ring-2 focus:ring-inset focus:ring-green-400`,
+  button: `w-24 shrink-0 bg-green-500 text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-600`,
+  error: `absolute -top-8 left-0 right-0 rounded bg-black/60 px-2 py-1 text-sm text-red-300`,
 };
 
 const SendMessage = () => {
