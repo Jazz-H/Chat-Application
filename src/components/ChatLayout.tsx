@@ -1,32 +1,38 @@
-import { useState } from "react";
+import ChatProvider from "../chat/ChatProvider";
+import { useChat, chatPathFor } from "../chat/chat";
 import SidebarNav from "./SidebarNav";
 import Header from "./Header";
 import Chat from "./Chat";
-import SendMessage from "./SendMessage";
 import TypingIndicator from "./TypingIndicator";
-import { ROOMS, DEFAULT_ROOM_ID } from "../rooms";
+import SendMessage from "./SendMessage";
 
-/**
- * Two-pane application shell for signed-in users: a collapsible room list
- * alongside a column containing the header, the scrollable message list, and
- * the message composer. The active room scopes both reads and writes.
- */
-const ChatLayout = () => {
-  const [activeRoomId, setActiveRoomId] = useState(DEFAULT_ROOM_ID);
-  const activeRoom = ROOMS.find((room) => room.id === activeRoomId) ?? ROOMS[0];
+const ChatShell = () => {
+  const { active } = useChat();
+  const chatPath = chatPathFor(active);
+  const key = chatPath.join("/");
+  const placeholder =
+    active.kind === "room"
+      ? `Message #${active.name}`
+      : `Message ${active.name}`;
 
   return (
     <div className="flex h-screen overflow-hidden text-white">
-      <SidebarNav activeRoomId={activeRoomId} onSelectRoom={setActiveRoomId} />
+      <SidebarNav />
       <div className="flex min-w-0 flex-1 flex-col">
-        <Header room={activeRoom} />
-        {/* Remount on room change so message/pagination state resets cleanly. */}
-        <Chat key={activeRoomId} roomId={activeRoomId} />
-        <TypingIndicator roomId={activeRoomId} />
-        <SendMessage roomId={activeRoomId} />
+        <Header active={active} />
+        {/* Remount on conversation change so message/pagination state resets. */}
+        <Chat key={key} chatPath={chatPath} />
+        <TypingIndicator chatPath={chatPath} />
+        <SendMessage chatPath={chatPath} placeholder={placeholder} />
       </div>
     </div>
   );
 };
+
+const ChatLayout = () => (
+  <ChatProvider>
+    <ChatShell />
+  </ChatProvider>
+);
 
 export default ChatLayout;
