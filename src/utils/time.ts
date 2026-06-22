@@ -1,15 +1,14 @@
-// Lightweight, dependency-free relative-time formatting for chat messages.
+import type { Timestamp } from "firebase/firestore";
 
 /**
  * Convert a Firestore Timestamp (or null while serverTimestamp() resolves)
  * into a short, human-friendly relative string: "now", "5m", "3h", "2d",
  * falling back to a localized date for anything older than a week.
- *
- * @param {{ toDate: () => Date } | null | undefined} timestamp
- * @returns {string}
  */
-export function formatRelativeTime(timestamp) {
-  if (!timestamp || typeof timestamp.toDate !== "function") {
+export function formatRelativeTime(
+  timestamp: Timestamp | null | undefined
+): string {
+  if (!timestamp) {
     // serverTimestamp() is still pending on a just-sent (optimistic) message.
     return "now";
   }

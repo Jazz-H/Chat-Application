@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import Message from "./Message";
 import SendMessage from "./SendMessage";
 import { db } from "../firebase";
@@ -10,8 +10,11 @@ import {
   onSnapshot,
 } from "firebase/firestore";
 import SidebarNav from "./SidebarNav";
+import type { ChatMessage } from "../types";
 
 const PAGE_SIZE = 25;
+
+type Status = "loading" | "ready" | "error";
 
 const style = {
   main: `flex flex-col z-0 px-2 pb-2`,
@@ -21,13 +24,13 @@ const style = {
 };
 
 const Chat = () => {
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [messageLimit, setMessageLimit] = useState(PAGE_SIZE);
-  const [status, setStatus] = useState("loading"); // loading | ready | error
+  const [status, setStatus] = useState<Status>("loading");
   const [hasMore, setHasMore] = useState(false);
 
-  const bottomRef = useRef();
-  const lastMessageId = useRef(null);
+  const bottomRef = useRef<HTMLSpanElement>(null);
+  const lastMessageId = useRef<string | null>(null);
 
   useEffect(() => {
     // Fetch the most recent `messageLimit` messages (descending), then
@@ -43,7 +46,7 @@ const Chat = () => {
       q,
       (snapshot) => {
         const docs = snapshot.docs.map((doc) => ({
-          ...doc.data(),
+          ...(doc.data() as Omit<ChatMessage, "id">),
           id: doc.id,
         }));
         setHasMore(docs.length === messageLimit);

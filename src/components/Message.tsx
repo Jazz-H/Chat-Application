@@ -1,6 +1,6 @@
-import React from "react";
 import { auth } from "../firebase";
 import { formatRelativeTime } from "../utils/time";
+import type { ChatMessage } from "../types";
 
 const style = {
   row: `flex flex-col mx-4 my-3`,
@@ -10,7 +10,11 @@ const style = {
   received: `self-start items-start bg-gray-200 text-black rounded-bl-sm`,
 };
 
-const Message = ({ message }) => {
+interface MessageProps {
+  message: ChatMessage;
+}
+
+const Message = ({ message }: MessageProps) => {
   // auth.currentUser can briefly be null during the auth redirect / sign-out,
   // so guard against dereferencing it.
   const isSent = message.uid === auth.currentUser?.uid;
@@ -21,7 +25,9 @@ const Message = ({ message }) => {
       <span className={style.meta}>
         {displayName} · {formatRelativeTime(message.timestamp)}
       </span>
-      <div className={`${style.bubble} ${isSent ? style.sent : style.received}`}>
+      <div
+        className={`${style.bubble} ${isSent ? style.sent : style.received}`}
+      >
         <p>{message.text}</p>
       </div>
     </div>

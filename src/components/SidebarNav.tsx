@@ -1,7 +1,14 @@
 import { useState } from "react";
+
+interface MenuItem {
+  title: string;
+  src: string;
+  gap: boolean;
+}
+
 const SidebarNav = () => {
   const [open, setOpen] = useState(true);
-  const Menus = [
+  const Menus: MenuItem[] = [
     {
       title: "Inbox",
       src: "https://img.icons8.com/cotton/50/000000/secured-letter--v2.png",
@@ -80,4 +87,5 @@ const SidebarNav = () => {
     </div>
   );
 };
+
 export default SidebarNav;

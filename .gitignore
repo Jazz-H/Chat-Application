@@ -8,8 +8,11 @@
 # testing
 /coverage
 
-# production
+# production / build output
 /build
+/dist
+*.local
+.vite
 
 # misc
 .DS_Store

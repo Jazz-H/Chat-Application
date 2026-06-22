@@ -1,9 +1,7 @@
-import React from "react";
 import { auth } from "../firebase";
 
 const style = {
-  button: `bg-black text-white px-6  rounded-md top-2 right-10 absolute hover:bg-gray-600 hover:text-white drop-shadow-lg shadow-white`,
-  banner: `bg-pink w-full top-0 h-20 absolute`,
+  button: `bg-black text-white px-6 rounded-md top-2 right-10 absolute hover:bg-gray-600 hover:text-white drop-shadow-lg shadow-white`,
 };
 
 const LogOut = () => {
