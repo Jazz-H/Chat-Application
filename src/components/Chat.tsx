@@ -14,6 +14,10 @@ const PAGE_SIZE = 25;
 
 type Status = "loading" | "ready" | "error";
 
+interface ChatProps {
+  roomId: string;
+}
+
 const style = {
   scroll: `flex-1 overflow-y-auto backdrop-blur-sm bg-black/20`,
   inner: `flex min-h-full flex-col justify-end px-2 py-4`,
@@ -22,7 +26,7 @@ const style = {
   loadMore: `mx-auto my-3 rounded-full bg-white/10 px-4 py-1 text-sm text-white/80 hover:bg-white/20 disabled:opacity-50`,
 };
 
-const Chat = () => {
+const Chat = ({ roomId }: ChatProps) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [messageLimit, setMessageLimit] = useState(PAGE_SIZE);
   const [status, setStatus] = useState<Status>("loading");
@@ -36,7 +40,7 @@ const Chat = () => {
     // reverse for natural top-to-bottom display. This avoids loading the
     // entire collection on every mount.
     const q = query(
-      collection(db, "ChatMessages"),
+      collection(db, "rooms", roomId, "messages"),
       orderBy("timestamp", "desc"),
       limit(messageLimit)
     );
@@ -61,7 +65,7 @@ const Chat = () => {
     );
 
     return () => unsubscribe();
-  }, [messageLimit]);
+  }, [roomId, messageLimit]);
 
   // Auto-scroll to the bottom only when a genuinely new message arrives,
   // not when older messages are prepended via "load older".

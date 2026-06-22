@@ -3,24 +3,35 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Chat messages: readable by any signed-in user (including anonymous
-    // guests), creatable only by the authenticated author, and immutable
-    // once written.
+    // Shared validation for a chat message create.
+    function isValidMessage() {
+      return request.auth != null
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() <= 500
+        && request.resource.data.name is string
+        && request.resource.data.keys().hasOnly(
+             ['text', 'name', 'uid', 'timestamp']
+           );
+    }
+
+    // Messages now live under a room/channel:
+    // rooms/{roomId}/messages/{messageId}
+    // Readable by any signed-in user (including anonymous guests), creatable
+    // only by the authenticated author, and immutable once written.
+    match /rooms/{roomId}/messages/{messageId} {
+      allow read: if request.auth != null;
+      allow create: if isValidMessage();
+      allow update, delete: if false;
+    }
+
+    // Legacy flat collection (pre-rooms). Kept readable and writable during
+    // the transition so the previously-deployed app keeps working until the
+    // rooms version ships; can be locked down in a later cleanup.
     match /ChatMessages/{messageId} {
       allow read: if request.auth != null;
-
-      allow create: if request.auth != null
-                    && request.resource.data.uid == request.auth.uid
-                    && request.resource.data.text is string
-                    && request.resource.data.text.size() > 0
-                    && request.resource.data.text.size() <= 500
-                    && request.resource.data.name is string
-                    && request.resource.data.keys().hasOnly(
-                         ['text', 'name', 'uid', 'timestamp']
-                       );
-
-      // Messages cannot be edited or deleted (yet). Tighten/loosen in a
-      // later phase when edit/delete features land.
+      allow create: if isValidMessage();
       allow update, delete: if false;
     }
   }

@@ -11,7 +11,11 @@ const style = {
   error: `absolute -top-8 left-0 right-0 rounded bg-black/60 px-2 py-1 text-sm text-red-300`,
 };
 
-const SendMessage = () => {
+interface SendMessageProps {
+  roomId: string;
+}
+
+const SendMessage = ({ roomId }: SendMessageProps) => {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
@@ -32,7 +36,7 @@ const SendMessage = () => {
     setError("");
 
     try {
-      await addDoc(collection(db, "ChatMessages"), {
+      await addDoc(collection(db, "rooms", roomId, "messages"), {
         text,
         name: user.displayName || "Guest",
         uid: user.uid,

@@ -1,34 +1,12 @@
 import { useState } from "react";
+import { ROOMS } from "../rooms";
 
-interface MenuItem {
-  title: string;
-  src: string;
+interface SidebarNavProps {
+  activeRoomId: string;
+  onSelectRoom: (roomId: string) => void;
 }
 
-const MENUS: MenuItem[] = [
-  {
-    title: "Inbox",
-    src: "https://img.icons8.com/cotton/50/000000/secured-letter--v2.png",
-  },
-  {
-    title: "Account",
-    src: "https://img.icons8.com/cotton/50/null/web-account.png",
-  },
-  {
-    title: "Forums",
-    src: "https://img.icons8.com/cotton/50/000000/filled-chat--v1.png",
-  },
-  {
-    title: "Search",
-    src: "https://img.icons8.com/color/50/000000/search--v1.png",
-  },
-  {
-    title: "Setting",
-    src: "https://img.icons8.com/cotton/50/null/settings--v1.png",
-  },
-];
-
-const SidebarNav = () => {
+const SidebarNav = ({ activeRoomId, onSelectRoom }: SidebarNavProps) => {
   const [open, setOpen] = useState(true);
 
   return (
@@ -61,18 +39,37 @@ const SidebarNav = () => {
 
       <hr className="mt-6 rounded-md border-2 border-white/30" />
 
-      <ul className="pt-6">
-        {MENUS.map((menu) => (
-          <li
-            key={menu.title}
-            className="mt-2 flex cursor-pointer items-center gap-x-4 rounded-md p-2 text-lg font-medium text-gray-200 hover:bg-slate-600"
-          >
-            <img src={menu.src} alt={menu.title} className="h-6 w-6 shrink-0" />
-            <span className={`${!open && "hidden"} origin-left duration-200`}>
-              {menu.title}
-            </span>
-          </li>
-        ))}
+      <p
+        className={`mt-4 text-xs font-semibold uppercase tracking-wider text-white/50 ${
+          !open && "hidden"
+        }`}
+      >
+        Channels
+      </p>
+
+      <ul className="mt-2 space-y-1">
+        {ROOMS.map((room) => {
+          const isActive = room.id === activeRoomId;
+          return (
+            <li key={room.id}>
+              <button
+                type="button"
+                onClick={() => onSelectRoom(room.id)}
+                aria-current={isActive ? "page" : undefined}
+                className={`flex w-full items-center gap-x-4 rounded-md p-2 text-left text-lg font-medium duration-200 ${
+                  isActive
+                    ? "bg-slate-500 text-white"
+                    : "text-gray-200 hover:bg-slate-600"
+                }`}
+              >
+                <span className="w-6 shrink-0 text-center text-xl">
+                  {room.icon}
+                </span>
+                <span className={`${!open && "hidden"}`}>{room.name}</span>
+              </button>
+            </li>
+          );
+        })}
       </ul>
     </aside>
   );
