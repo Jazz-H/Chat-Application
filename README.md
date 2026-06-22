@@ -1,70 +1,101 @@
-# Getting Started with Create React App
+# 💬 Chat App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A real-time chat application with public channels, 1:1 direct messages, typing
+indicators, reactions, message editing, and image sharing — built with React,
+TypeScript, Vite, and Firebase, and deployed to Firebase Hosting via CI/CD.
 
-## Available Scripts
+**Live:** https://chatappdemo-e1b26.web.app
 
-In the project directory, you can run:
+> _Add a screenshot or GIF here (e.g. `docs/screenshot.png`) — it's the first
+> thing a reviewer looks at._
 
-### `npm start`
+---
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## ✨ Features
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- **Authentication** — Google (popup) and email/password (sign in + create
+  account), plus anonymous guest access.
+- **Channels** — multiple public rooms (General, Random, Tech, Gaming, Music).
+- **Direct messages** — start a 1:1 DM by clicking a user in any channel;
+  conversations are private to their two members.
+- **Real-time everything** — Firestore live updates for messages, typing
+  indicators, and reactions.
+- **Rich messaging** — message grouping with avatars and timestamps, date
+  separators, emoji reactions, inline edit, delete (with a themed confirm),
+  and image sharing.
+- **Modern UI** — cohesive black/blue theme, glassmorphism, and a responsive
+  layout with a slide-in sidebar drawer on mobile.
 
-### `npm test`
+## 🛠 Tech Stack
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+| Area       | Choice                                                     |
+| ---------- | ---------------------------------------------------------- |
+| Framework  | React 18 + **TypeScript** (strict)                         |
+| Build      | **Vite** (migrated from Create React App)                  |
+| Styling    | Tailwind CSS                                               |
+| Backend    | Firebase **Auth** + **Firestore**                          |
+| Tooling    | ESLint, Prettier, Husky + lint-staged                      |
+| Monitoring | Sentry (opt-in via env)                                    |
+| CI/CD      | GitHub Actions → Firebase Hosting (lint + typecheck gates) |
 
-### `npm run build`
+## 🏗 Architecture
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- **Generalized message layer.** Channels and DMs share one implementation via
+  a `chatPath` (`["rooms", id]` or `["conversations", id]`); `Chat`,
+  `SendMessage`, `TypingIndicator`, and the message actions all operate on it.
+- **Chat context.** `ChatProvider` / `useChat` track the active conversation
+  and handle opening rooms and DMs.
+- **Security rules.** `firestore.rules` enforces author-only writes, payload
+  validation, member-only DM access, and scoped reaction/edit/delete updates.
+- **Images.** Compressed in-browser to a data URL and stored on the message
+  (free-tier friendly; swap `compressImageToDataUrl` for object storage to
+  scale).
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```
+src/
+  chat/         # ChatProvider, context, active-conversation helpers
+  components/   # UI (ChatLayout, SidebarNav, Chat, Message, SendMessage, ...)
+  hooks/        # useTyping
+  lib/          # messageActions, image compression, sentry init
+  utils/        # time formatting
+  firebase.ts   # Firebase init (auth, db)
+  rooms.ts      # channel definitions
+firestore.rules # Firestore security rules
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## 🚀 Getting Started
 
-### `npm run eject`
+```bash
+npm install
+npm run dev      # start the dev server
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+Other scripts:
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```bash
+npm run build      # typecheck + production build (outputs to build/)
+npm run lint       # ESLint (max-warnings 0)
+npm run typecheck  # tsc --noEmit
+npm run format     # Prettier
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### Firebase configuration
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+The web Firebase config in `src/firebase.ts` is safe to commit — access is
+controlled by **security rules**, not key secrecy. To run against your own
+project, swap the config and publish `firestore.rules`
+(Firebase Console → Firestore → Rules), then enable the **Google** and
+**Email/Password** sign-in providers under Authentication.
 
-## Learn More
+Optional error monitoring: set `VITE_SENTRY_DSN` to enable Sentry.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## 📦 Deployment
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Pushing to `master` triggers GitHub Actions, which runs `lint → build` and
+deploys to Firebase Hosting. Pull requests get an automatic preview channel.
 
-### Code Splitting
+## 🗺 Roadmap
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- Automated tests (Vitest + React Testing Library + Firebase emulator)
+- Presence (online/away)
+- Moderation (rate limiting / profanity) via Cloud Functions
