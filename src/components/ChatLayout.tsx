@@ -3,6 +3,7 @@ import SidebarNav from "./SidebarNav";
 import Header from "./Header";
 import Chat from "./Chat";
 import SendMessage from "./SendMessage";
+import TypingIndicator from "./TypingIndicator";
 import { ROOMS, DEFAULT_ROOM_ID } from "../rooms";
 
 /**
@@ -21,6 +22,7 @@ const ChatLayout = () => {
         <Header room={activeRoom} />
         {/* Remount on room change so message/pagination state resets cleanly. */}
         <Chat key={activeRoomId} roomId={activeRoomId} />
+        <TypingIndicator roomId={activeRoomId} />
         <SendMessage roomId={activeRoomId} />
       </div>
     </div>

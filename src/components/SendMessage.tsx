@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { auth, db } from "../firebase";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { useTyping } from "../hooks/useTyping";
 
 const MAX_LENGTH = 500;
 
@@ -18,6 +19,7 @@ const SendMessage = ({ roomId }: SendMessageProps) => {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
+  const { notifyTyping, clearTyping } = useTyping(roomId);
 
   const sendMessage = async (e: FormEvent) => {
     e.preventDefault();
@@ -42,6 +44,7 @@ const SendMessage = ({ roomId }: SendMessageProps) => {
         timestamp: serverTimestamp(),
       });
       setInput("");
+      clearTyping();
     } catch (err) {
       console.error("Failed to send message:", err);
       setError("Couldn’t send your message. Please try again.");
@@ -62,7 +65,11 @@ const SendMessage = ({ roomId }: SendMessageProps) => {
       )}
       <input
         value={input}
-        onChange={(e) => setInput(e.target.value)}
+        onChange={(e) => {
+          setInput(e.target.value);
+          if (e.target.value.trim()) notifyTyping();
+          else clearTyping();
+        }}
         className="flex-1 rounded-full bg-white/5 px-4 py-2.5 text-base text-white placeholder-white/40 outline-none ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-blue-400"
         type="text"
         maxLength={MAX_LENGTH}
