@@ -50,6 +50,7 @@ const SignIn = () => {
               <img
                 class="pr-5"
                 src="https://img.icons8.com/nolan/40/github.png"
+                alt="GitHub logo"
               />{" "}
               Login with GitHub
             </button>
@@ -57,6 +58,7 @@ const SignIn = () => {
               <img
                 class="pr-5"
                 src="https://img.icons8.com/color/40/null/google-logo.png"
+                alt="Google logo"
               />
               Login with Google
             </button>
@@ -64,6 +66,7 @@ const SignIn = () => {
               <img
                 class="pr-5"
                 src="https://img.icons8.com/external-kiranshastry-lineal-kiranshastry/40/null/external-user-interface-kiranshastry-lineal-kiranshastry.png"
+                alt="Guest user"
               />
               Login as a Guest
             </button>

@@ -38,6 +38,7 @@ const SidebarNav = () => {
       >
         <img
           src="https://img.icons8.com/cotton/30/000000/circled-left--v2.png"
+          alt="Toggle sidebar"
           className={`absolute cursor-pointer -right-3 top-9 w-7 border-dark-purple
            border-2 rounded-full  ${!open && "rotate-180"}`}
           onClick={() => setOpen(!open)}
@@ -45,6 +46,7 @@ const SidebarNav = () => {
         <div className="flex gap-x-4 items-center">
           <img
             src="https://img.icons8.com/external-sbts2018-outline-color-sbts2018/48/null/external-active-basic-ui-elements-2.3-sbts2018-outline-color-sbts2018.png"
+            alt="Chat App logo"
             className={`cursor-pointer duration-500 ${
               open && "rotate-[360deg]"
             }`}
@@ -67,7 +69,7 @@ const SidebarNav = () => {
                 index === 0 && "bg-light-white"
               } `}
             >
-              <img src={`${Menu.src}`} />
+              <img src={`${Menu.src}`} alt={Menu.title} />
               <span className={`${!open && "hidden"} origin-left duration-200`}>
                 {Menu.title}
               </span>

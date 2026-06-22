@@ -7,10 +7,6 @@ const style = {
 };
 
 const LogOut = () => {
-  const signOut = () => {
-    signOut(auth);
-  };
-
   return (
     <>
       <div className="w-full h-10 top-0 left-0 absolute bg-slate-200">
