@@ -4,7 +4,7 @@ import Logo from "./Logo";
 import {
   GoogleAuthProvider,
   GithubAuthProvider,
-  signInWithRedirect,
+  signInWithPopup,
   signInAnonymously,
 } from "firebase/auth";
 
@@ -62,17 +62,39 @@ const SignIn = () => {
     setPending(true);
     try {
       await fn();
+      // On success the auth state changes and this screen unmounts.
     } catch (err) {
+      const code =
+        typeof err === "object" && err !== null && "code" in err
+          ? String((err as { code: unknown }).code)
+          : "";
+
+      // User simply dismissed the popup — nothing to surface.
+      if (
+        code === "auth/popup-closed-by-user" ||
+        code === "auth/cancelled-popup-request"
+      ) {
+        setPending(false);
+        return;
+      }
+
       console.error("Sign-in failed:", err);
-      setError("Sign-in failed. Please try again.");
+      setError(
+        code === "auth/popup-blocked"
+          ? "Please allow popups for this site to sign in."
+          : "Sign-in failed. Please try again."
+      );
       setPending(false);
     }
   };
 
+  // Use popup (not redirect): the app is served from *.web.app while the auth
+  // handler lives on *.firebaseapp.com, and browsers block the cross-domain
+  // storage that signInWithRedirect depends on, losing the result.
   const googleSignIn = () =>
-    runSignIn(() => signInWithRedirect(auth, new GoogleAuthProvider()));
+    runSignIn(() => signInWithPopup(auth, new GoogleAuthProvider()));
   const gitHubSignIn = () =>
-    runSignIn(() => signInWithRedirect(auth, new GithubAuthProvider()));
+    runSignIn(() => signInWithPopup(auth, new GithubAuthProvider()));
   const guestSignIn = () => runSignIn(() => signInAnonymously(auth));
 
   return (
