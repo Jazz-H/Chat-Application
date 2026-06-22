@@ -13,24 +13,30 @@ const ChatProvider = ({ children }: { children: ReactNode }) => {
   const openRoom = (room: Room) =>
     setActive({ kind: "room", id: room.id, name: room.name, icon: room.icon });
 
-  const openDm = (peerUid: string, peerName: string) => {
+  const openDm = async (peerUid: string, peerName: string) => {
     const me = auth.currentUser;
     if (!me || peerUid === me.uid) return;
 
     const id = dmId(me.uid, peerUid);
-    // Upsert the conversation so it shows up in both users' DM lists.
-    setDoc(
-      doc(db, "conversations", id),
-      {
-        members: [me.uid, peerUid],
-        memberInfo: {
-          [me.uid]: { name: me.displayName || "Guest" },
-          [peerUid]: { name: peerName },
+    // Upsert the conversation FIRST so it exists before the message listener
+    // attaches (the membership security rule reads this doc). Otherwise the
+    // first load of a brand-new DM races the create and is denied.
+    try {
+      await setDoc(
+        doc(db, "conversations", id),
+        {
+          members: [me.uid, peerUid],
+          memberInfo: {
+            [me.uid]: { name: me.displayName || "Guest" },
+            [peerUid]: { name: peerName },
+          },
+          updatedAt: serverTimestamp(),
         },
-        updatedAt: serverTimestamp(),
-      },
-      { merge: true }
-    ).catch(() => undefined);
+        { merge: true }
+      );
+    } catch (err) {
+      console.error("Failed to open conversation:", err);
+    }
 
     setActive({ kind: "dm", id, name: peerName, peerUid });
   };

@@ -14,7 +14,12 @@ interface Conversation {
   updatedAt: number;
 }
 
-const SidebarNav = () => {
+interface SidebarNavProps {
+  mobileOpen: boolean;
+  onClose: () => void;
+}
+
+const SidebarNav = ({ mobileOpen, onClose }: SidebarNavProps) => {
   const [open, setOpen] = useState(true);
   const [dms, setDms] = useState<Conversation[]>([]);
   const { active, openRoom, openDm } = useChat();
@@ -64,9 +69,9 @@ const SidebarNav = () => {
 
   return (
     <aside
-      className={`${
-        open ? "w-64" : "w-20"
-      } flex h-screen shrink-0 flex-col border-r border-blue-500/20 bg-slate-950/85 backdrop-blur-xl duration-300`}
+      className={`${open ? "w-64" : "w-20"} fixed inset-y-0 left-0 z-40 flex h-screen shrink-0 flex-col border-r border-blue-500/20 bg-slate-950/95 backdrop-blur-xl transition-transform duration-300 md:static md:z-auto md:translate-x-0 ${
+        mobileOpen ? "translate-x-0" : "-translate-x-full"
+      }`}
     >
       <div
         className={`flex items-center gap-2 border-b border-blue-500/20 p-4 ${
@@ -81,13 +86,23 @@ const SidebarNav = () => {
             </h1>
           </div>
         )}
+        {/* Collapse toggle (desktop) */}
         <button
           type="button"
           aria-label={open ? "Collapse sidebar" : "Expand sidebar"}
           onClick={() => setOpen(!open)}
-          className="rounded-lg p-2 text-lg leading-none text-blue-200/70 hover:bg-blue-500/10 hover:text-white"
+          className="hidden rounded-lg p-2 text-lg leading-none text-blue-200/70 hover:bg-blue-500/10 hover:text-white md:inline-flex"
         >
           {open ? "«" : "»"}
+        </button>
+        {/* Close drawer (mobile) */}
+        <button
+          type="button"
+          aria-label="Close menu"
+          onClick={onClose}
+          className="rounded-lg p-2 text-lg leading-none text-blue-200/70 hover:bg-blue-500/10 hover:text-white md:hidden"
+        >
+          ✕
         </button>
       </div>
 
@@ -104,7 +119,10 @@ const SidebarNav = () => {
               <li key={room.id}>
                 <button
                   type="button"
-                  onClick={() => openRoom(room)}
+                  onClick={() => {
+                    openRoom(room);
+                    onClose();
+                  }}
                   aria-current={isActive ? "page" : undefined}
                   title={room.name}
                   className={itemClass(isActive)}
@@ -131,7 +149,10 @@ const SidebarNav = () => {
                   <li key={dm.id}>
                     <button
                       type="button"
-                      onClick={() => openDm(dm.peerUid, dm.peerName)}
+                      onClick={() => {
+                        openDm(dm.peerUid, dm.peerName);
+                        onClose();
+                      }}
                       aria-current={isActive ? "page" : undefined}
                       title={dm.peerName}
                       className={itemClass(isActive)}
