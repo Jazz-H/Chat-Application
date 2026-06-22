@@ -30,17 +30,18 @@ const ImageIcon = () => (
 );
 
 interface SendMessageProps {
-  roomId: string;
+  chatPath: string[];
+  placeholder: string;
 }
 
-const SendMessage = ({ roomId }: SendMessageProps) => {
+const SendMessage = ({ chatPath, placeholder }: SendMessageProps) => {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
-  const { notifyTyping, clearTyping } = useTyping(roomId);
+  const { notifyTyping, clearTyping } = useTyping(chatPath);
 
   const pickImage = (e: ChangeEvent<HTMLInputElement>) => {
     const chosen = e.target.files?.[0];
@@ -85,7 +86,7 @@ const SendMessage = ({ roomId }: SendMessageProps) => {
       let imageUrl: string | undefined;
       if (file) imageUrl = await compressImageToDataUrl(file);
 
-      await addDoc(collection(db, "rooms", roomId, "messages"), {
+      await addDoc(collection(db, [...chatPath, "messages"].join("/")), {
         text,
         name: user.displayName || "Guest",
         uid: user.uid,
@@ -161,7 +162,7 @@ const SendMessage = ({ roomId }: SendMessageProps) => {
           className="flex-1 rounded-full bg-white/5 px-4 py-2.5 text-base text-white placeholder-white/40 outline-none ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-blue-400"
           type="text"
           maxLength={MAX_LENGTH}
-          placeholder={`Message #${roomId}`}
+          placeholder={placeholder}
           aria-label="Message"
           autoComplete="off"
         />

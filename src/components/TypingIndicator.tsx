@@ -4,7 +4,7 @@ import type { Timestamp } from "firebase/firestore";
 import { auth, db } from "../firebase";
 
 interface TypingIndicatorProps {
-  roomId: string;
+  chatPath: string[];
 }
 
 interface TypingEntry {
@@ -23,14 +23,15 @@ function label(names: string[]): string {
   return "Several people are typing";
 }
 
-const TypingIndicator = ({ roomId }: TypingIndicatorProps) => {
+const TypingIndicator = ({ chatPath }: TypingIndicatorProps) => {
   const [entries, setEntries] = useState<TypingEntry[]>([]);
   // A periodic tick so stale entries expire even without new snapshots.
   const [, setTick] = useState(0);
+  const key = chatPath.join("/");
 
   useEffect(() => {
     const unsubscribe = onSnapshot(
-      collection(db, "rooms", roomId, "typing"),
+      collection(db, [...chatPath, "typing"].join("/")),
       (snapshot) => {
         const me = auth.currentUser?.uid;
         const next: TypingEntry[] = [];
@@ -51,7 +52,8 @@ const TypingIndicator = ({ roomId }: TypingIndicatorProps) => {
       () => undefined
     );
     return () => unsubscribe();
-  }, [roomId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
 
   useEffect(() => {
     const id = setInterval(() => setTick((t) => t + 1), 2000);

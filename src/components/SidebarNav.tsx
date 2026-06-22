@@ -1,20 +1,77 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { collection, onSnapshot, query, where } from "firebase/firestore";
+import type { Timestamp } from "firebase/firestore";
+import { auth, db } from "../firebase";
 import { ROOMS } from "../rooms";
+import { useChat } from "../chat/chat";
 import Logo from "./Logo";
+import Avatar from "./Avatar";
 
-interface SidebarNavProps {
-  activeRoomId: string;
-  onSelectRoom: (roomId: string) => void;
+interface Conversation {
+  id: string;
+  peerUid: string;
+  peerName: string;
+  updatedAt: number;
 }
 
-const SidebarNav = ({ activeRoomId, onSelectRoom }: SidebarNavProps) => {
+interface SidebarNavProps {
+  mobileOpen: boolean;
+  onClose: () => void;
+}
+
+const SidebarNav = ({ mobileOpen, onClose }: SidebarNavProps) => {
   const [open, setOpen] = useState(true);
+  const [dms, setDms] = useState<Conversation[]>([]);
+  const { active, openRoom, openDm } = useChat();
+  const myUid = auth.currentUser?.uid;
+
+  useEffect(() => {
+    if (!myUid) return;
+    const q = query(
+      collection(db, "conversations"),
+      where("members", "array-contains", myUid)
+    );
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const list: Conversation[] = [];
+        snapshot.forEach((docSnap) => {
+          const data = docSnap.data() as {
+            members: string[];
+            memberInfo?: Record<string, { name?: string }>;
+            updatedAt?: Timestamp | null;
+          };
+          const peerUid = data.members.find((m) => m !== myUid);
+          if (!peerUid) return;
+          list.push({
+            id: docSnap.id,
+            peerUid,
+            peerName: data.memberInfo?.[peerUid]?.name || "Unknown",
+            updatedAt: data.updatedAt?.toMillis() ?? 0,
+          });
+        });
+        list.sort((a, b) => b.updatedAt - a.updatedAt);
+        setDms(list);
+      },
+      () => undefined
+    );
+    return () => unsubscribe();
+  }, [myUid]);
+
+  const itemClass = (isActive: boolean) =>
+    `flex w-full items-center rounded-xl p-2.5 text-sm font-medium transition ${
+      open ? "gap-3" : "justify-center"
+    } ${
+      isActive
+        ? "bg-gradient-to-r from-blue-600/40 to-blue-500/20 text-white ring-1 ring-inset ring-blue-400/30"
+        : "text-white/60 hover:bg-white/5 hover:text-white"
+    }`;
 
   return (
     <aside
-      className={`${
-        open ? "w-64" : "w-20"
-      } flex h-screen shrink-0 flex-col border-r border-blue-500/20 bg-slate-950/85 backdrop-blur-xl duration-300`}
+      className={`${open ? "w-64" : "w-20"} fixed inset-y-0 left-0 z-40 flex h-screen shrink-0 flex-col border-r border-blue-500/20 bg-slate-950/95 backdrop-blur-xl transition-transform duration-300 md:static md:z-auto md:translate-x-0 ${
+        mobileOpen ? "translate-x-0" : "-translate-x-full"
+      }`}
     >
       <div
         className={`flex items-center gap-2 border-b border-blue-500/20 p-4 ${
@@ -29,13 +86,23 @@ const SidebarNav = ({ activeRoomId, onSelectRoom }: SidebarNavProps) => {
             </h1>
           </div>
         )}
+        {/* Collapse toggle (desktop) */}
         <button
           type="button"
           aria-label={open ? "Collapse sidebar" : "Expand sidebar"}
           onClick={() => setOpen(!open)}
-          className="rounded-lg p-2 text-lg leading-none text-blue-200/70 hover:bg-blue-500/10 hover:text-white"
+          className="hidden rounded-lg p-2 text-lg leading-none text-blue-200/70 hover:bg-blue-500/10 hover:text-white md:inline-flex"
         >
           {open ? "«" : "»"}
+        </button>
+        {/* Close drawer (mobile) */}
+        <button
+          type="button"
+          aria-label="Close menu"
+          onClick={onClose}
+          className="rounded-lg p-2 text-lg leading-none text-blue-200/70 hover:bg-blue-500/10 hover:text-white md:hidden"
+        >
+          ✕
         </button>
       </div>
 
@@ -47,21 +114,18 @@ const SidebarNav = ({ activeRoomId, onSelectRoom }: SidebarNavProps) => {
         )}
         <ul className="space-y-1">
           {ROOMS.map((room) => {
-            const isActive = room.id === activeRoomId;
+            const isActive = active.kind === "room" && active.id === room.id;
             return (
               <li key={room.id}>
                 <button
                   type="button"
-                  onClick={() => onSelectRoom(room.id)}
+                  onClick={() => {
+                    openRoom(room);
+                    onClose();
+                  }}
                   aria-current={isActive ? "page" : undefined}
                   title={room.name}
-                  className={`flex w-full items-center rounded-xl p-2.5 text-sm font-medium transition ${
-                    open ? "gap-3" : "justify-center"
-                  } ${
-                    isActive
-                      ? "bg-gradient-to-r from-blue-600/40 to-blue-500/20 text-white ring-1 ring-inset ring-blue-400/30"
-                      : "text-white/60 hover:bg-white/5 hover:text-white"
-                  }`}
+                  className={itemClass(isActive)}
                 >
                   <span className="text-lg">{room.icon}</span>
                   {open && <span className="truncate">{room.name}</span>}
@@ -70,6 +134,38 @@ const SidebarNav = ({ activeRoomId, onSelectRoom }: SidebarNavProps) => {
             );
           })}
         </ul>
+
+        {dms.length > 0 && (
+          <>
+            {open && (
+              <p className="mb-2 mt-5 px-2 text-xs font-semibold uppercase tracking-wider text-blue-200/40">
+                Direct Messages
+              </p>
+            )}
+            <ul className="mt-2 space-y-1">
+              {dms.map((dm) => {
+                const isActive = active.kind === "dm" && active.id === dm.id;
+                return (
+                  <li key={dm.id}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        openDm(dm.peerUid, dm.peerName);
+                        onClose();
+                      }}
+                      aria-current={isActive ? "page" : undefined}
+                      title={dm.peerName}
+                      className={itemClass(isActive)}
+                    >
+                      <Avatar name={dm.peerName} uid={dm.peerUid} size={22} />
+                      {open && <span className="truncate">{dm.peerName}</span>}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </>
+        )}
       </nav>
     </aside>
   );

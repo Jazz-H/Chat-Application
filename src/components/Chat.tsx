@@ -16,7 +16,7 @@ const PAGE_SIZE = 25;
 type Status = "loading" | "ready" | "error";
 
 interface ChatProps {
-  roomId: string;
+  chatPath: string[];
 }
 
 const style = {
@@ -27,7 +27,7 @@ const style = {
   loadMore: `mx-auto my-3 rounded-full bg-white/10 px-4 py-1 text-sm text-white/80 hover:bg-white/20 disabled:opacity-50`,
 };
 
-const Chat = ({ roomId }: ChatProps) => {
+const Chat = ({ chatPath }: ChatProps) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [messageLimit, setMessageLimit] = useState(PAGE_SIZE);
   const [status, setStatus] = useState<Status>("loading");
@@ -35,13 +35,14 @@ const Chat = ({ roomId }: ChatProps) => {
 
   const bottomRef = useRef<HTMLSpanElement>(null);
   const lastMessageId = useRef<string | null>(null);
+  const pathKey = chatPath.join("/");
 
   useEffect(() => {
     // Fetch the most recent `messageLimit` messages (descending), then
     // reverse for natural top-to-bottom display. This avoids loading the
     // entire collection on every mount.
     const q = query(
-      collection(db, "rooms", roomId, "messages"),
+      collection(db, [...chatPath, "messages"].join("/")),
       orderBy("timestamp", "desc"),
       limit(messageLimit)
     );
@@ -66,7 +67,8 @@ const Chat = ({ roomId }: ChatProps) => {
     );
 
     return () => unsubscribe();
-  }, [roomId, messageLimit]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathKey, messageLimit]);
 
   // Auto-scroll to the bottom only when a genuinely new message arrives,
   // not when older messages are prepended via "load older".
@@ -145,7 +147,7 @@ const Chat = ({ roomId }: ChatProps) => {
                     isOwn={isOwn}
                     startGroup={startGroup}
                     endGroup={endGroup}
-                    roomId={roomId}
+                    chatPath={chatPath}
                   />
                 </div>
               );

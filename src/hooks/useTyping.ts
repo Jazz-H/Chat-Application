@@ -8,18 +8,20 @@ const REFRESH_MS = 2000;
 const STOP_MS = 3000;
 
 /**
- * Publishes the current user's "typing" state to
- * rooms/{roomId}/typing/{uid}. Returns `notifyTyping` (call on input) and
- * `clearTyping` (call on send). Automatically clears on room change/unmount.
+ * Publishes the current user's "typing" state to {chatPath}/typing/{uid}.
+ * Returns `notifyTyping` (call on input) and `clearTyping` (call on send).
+ * Automatically clears on conversation change / unmount.
  */
-export function useTyping(roomId: string) {
+export function useTyping(chatPath: string[]) {
   const stopTimer = useRef<ReturnType<typeof setTimeout>>();
   const lastWrite = useRef(0);
+  const key = chatPath.join("/");
 
   const typingDoc = useCallback(() => {
     const uid = auth.currentUser?.uid;
-    return uid ? doc(db, "rooms", roomId, "typing", uid) : null;
-  }, [roomId]);
+    return uid ? doc(db, [...chatPath, "typing", uid].join("/")) : null;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
 
   const clearTyping = useCallback(() => {
     if (stopTimer.current) {
@@ -49,7 +51,7 @@ export function useTyping(roomId: string) {
     stopTimer.current = setTimeout(clearTyping, STOP_MS);
   }, [typingDoc, clearTyping]);
 
-  // Clean up the typing doc when switching rooms or unmounting.
+  // Clean up the typing doc when switching conversations or unmounting.
   useEffect(() => clearTyping, [clearTyping]);
 
   return { notifyTyping, clearTyping };

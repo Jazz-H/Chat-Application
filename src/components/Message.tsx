@@ -8,6 +8,7 @@ import {
   editMessage,
 } from "../lib/messageActions";
 import ConfirmDialog from "./ConfirmDialog";
+import { useChat } from "../chat/chat";
 import type { ChatMessage } from "../types";
 
 const QUICK_REACTIONS = ["👍", "❤️", "😂", "🎉", "😮", "😢"];
@@ -74,7 +75,7 @@ interface MessageProps {
   isOwn: boolean;
   startGroup: boolean;
   endGroup: boolean;
-  roomId: string;
+  chatPath: string[];
 }
 
 const Message = ({
@@ -82,11 +83,15 @@ const Message = ({
   isOwn,
   startGroup,
   endGroup,
-  roomId,
+  chatPath,
 }: MessageProps) => {
+  const { openDm } = useChat();
   const uid = auth.currentUser?.uid;
   const displayName = message.name || "Guest";
   const tail = endGroup ? (isOwn ? "rounded-br-sm" : "rounded-bl-sm") : "";
+  const startDm = () => {
+    if (!isOwn) openDm(message.uid, displayName);
+  };
 
   const [editing, setEditing] = useState(false);
   const [editText, setEditText] = useState(message.text);
@@ -95,7 +100,7 @@ const Message = ({
 
   const react = (emoji: string) => {
     if (uid) {
-      toggleReaction(roomId, message.id, emoji, message.reactions, uid).catch(
+      toggleReaction(chatPath, message.id, emoji, message.reactions, uid).catch(
         () => undefined
       );
     }
@@ -105,7 +110,7 @@ const Message = ({
   const remove = () => setConfirmOpen(true);
 
   const confirmDelete = () => {
-    deleteMessage(roomId, message.id).catch(() => undefined);
+    deleteMessage(chatPath, message.id).catch(() => undefined);
     setConfirmOpen(false);
   };
 
@@ -113,7 +118,7 @@ const Message = ({
     e.preventDefault();
     const text = editText.trim();
     if (text && text !== message.text) {
-      editMessage(roomId, message.id, text).catch(() => undefined);
+      editMessage(chatPath, message.id, text).catch(() => undefined);
     }
     setEditing(false);
   };
@@ -130,7 +135,14 @@ const Message = ({
       {!isOwn && (
         <div className="w-8 shrink-0 self-end">
           {endGroup && (
-            <Avatar name={displayName} uid={message.uid} size={32} />
+            <button
+              type="button"
+              onClick={startDm}
+              title={`Message ${displayName}`}
+              className="rounded-full transition hover:opacity-80"
+            >
+              <Avatar name={displayName} uid={message.uid} size={32} />
+            </button>
           )}
         </div>
       )}
@@ -141,9 +153,14 @@ const Message = ({
         }`}
       >
         {!isOwn && startGroup && (
-          <span className="mb-1 ml-1 text-xs font-medium text-blue-200/70">
+          <button
+            type="button"
+            onClick={startDm}
+            title={`Message ${displayName}`}
+            className="mb-1 ml-1 text-xs font-medium text-blue-200/70 hover:text-blue-200 hover:underline"
+          >
             {displayName}
-          </span>
+          </button>
         )}
 
         <div
