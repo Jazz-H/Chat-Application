@@ -5,7 +5,7 @@ import { getFirestore } from "firebase/firestore";
 // Firebase web API keys are safe to expose in client code; access is
 // controlled by Firestore Security Rules, not by key secrecy.
 const firebaseConfig = {
-  apiKey: "AIzaSyBzt7AbH_wmNic9guYUCGXiJVnCZ_6Tem0",
+  apiKey: "AIzaSyBOyx6G8-p3Hg50HUNhzm9PJHbh4AP0h-Q",
   authDomain: "chatappdemo-e1b26.firebaseapp.com",
   projectId: "chatappdemo-e1b26",
   storageBucket: "chatappdemo-e1b26.firebasestorage.app",
