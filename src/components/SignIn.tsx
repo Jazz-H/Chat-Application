@@ -1,21 +1,20 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { auth } from "../firebase";
 import Logo from "./Logo";
 import {
   GoogleAuthProvider,
-  GithubAuthProvider,
   signInWithPopup,
   signInAnonymously,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  updateProfile,
 } from "firebase/auth";
 
 const buttonBase =
   "flex w-full items-center justify-center gap-3 rounded-xl px-4 py-3 font-semibold transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-transparent disabled:opacity-60";
 
-const GitHubIcon = () => (
-  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden>
-    <path d="M12 .5C5.73.5.5 5.74.5 12.02c0 5.1 3.29 9.42 7.86 10.95.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.54-3.88-1.54-.53-1.34-1.3-1.7-1.3-1.7-1.06-.72.08-.71.08-.71 1.17.08 1.79 1.2 1.79 1.2 1.04 1.79 2.73 1.27 3.4.97.1-.76.41-1.27.74-1.56-2.55-.29-5.23-1.28-5.23-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.43-2.69 5.41-5.25 5.69.42.36.8 1.08.8 2.18v3.23c0 .31.21.67.8.56A11.53 11.53 0 0 0 23.5 12.02C23.5 5.74 18.27.5 12 .5Z" />
-  </svg>
-);
+const inputClass =
+  "w-full rounded-xl bg-white/5 px-4 py-2.5 text-white placeholder-white/40 outline-none ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-blue-400";
 
 const GoogleIcon = () => (
   <svg viewBox="0 0 48 48" className="h-5 w-5" aria-hidden>
@@ -53,7 +52,32 @@ const GuestIcon = () => (
   </svg>
 );
 
+function messageForCode(code: string): string {
+  switch (code) {
+    case "auth/invalid-email":
+      return "Please enter a valid email address.";
+    case "auth/missing-password":
+    case "auth/weak-password":
+      return "Password must be at least 6 characters.";
+    case "auth/email-already-in-use":
+      return "That email is already registered — try signing in.";
+    case "auth/invalid-credential":
+    case "auth/wrong-password":
+    case "auth/user-not-found":
+      return "Incorrect email or password.";
+    case "auth/popup-blocked":
+      return "Please allow popups for this site to sign in.";
+    case "auth/operation-not-allowed":
+      return "This sign-in method isn’t enabled for the project.";
+    default:
+      return "Something went wrong. Please try again.";
+  }
+}
+
 const SignIn = () => {
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
 
@@ -79,13 +103,31 @@ const SignIn = () => {
       }
 
       console.error("Sign-in failed:", err);
-      setError(
-        code === "auth/popup-blocked"
-          ? "Please allow popups for this site to sign in."
-          : "Sign-in failed. Please try again."
-      );
+      setError(messageForCode(code));
       setPending(false);
     }
+  };
+
+  const handleEmailSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    if (pending) return;
+
+    runSignIn(async () => {
+      if (mode === "signup") {
+        const cred = await createUserWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
+        // Give email users a sensible display name (the part before "@").
+        const displayName = email.split("@")[0];
+        if (displayName) {
+          await updateProfile(cred.user, { displayName });
+        }
+      } else {
+        await signInWithEmailAndPassword(auth, email, password);
+      }
+    });
   };
 
   // Use popup (not redirect): the app is served from *.web.app while the auth
@@ -93,8 +135,6 @@ const SignIn = () => {
   // storage that signInWithRedirect depends on, losing the result.
   const googleSignIn = () =>
     runSignIn(() => signInWithPopup(auth, new GoogleAuthProvider()));
-  const gitHubSignIn = () =>
-    runSignIn(() => signInWithPopup(auth, new GithubAuthProvider()));
   const guestSignIn = () => runSignIn(() => signInAnonymously(auth));
 
   return (
@@ -106,7 +146,9 @@ const SignIn = () => {
             Chat App
           </h1>
           <p className="mt-2 text-sm text-white/70">
-            Sign in with social media or continue as a guest
+            {mode === "signup"
+              ? "Create an account to start chatting"
+              : "Sign in to continue"}
           </p>
         </div>
 
@@ -116,15 +158,59 @@ const SignIn = () => {
           </p>
         )}
 
-        <div className="flex flex-col gap-3">
+        <form
+          onSubmit={handleEmailSubmit}
+          className="flex flex-col gap-3 text-left"
+        >
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email"
+            autoComplete="email"
+            required
+            className={inputClass}
+          />
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Password"
+            autoComplete={
+              mode === "signup" ? "new-password" : "current-password"
+            }
+            required
+            className={inputClass}
+          />
           <button
-            onClick={gitHubSignIn}
+            type="submit"
             disabled={pending}
-            className={`${buttonBase} bg-[#1f2328] text-white hover:bg-black focus:ring-white/40`}
+            className={`${buttonBase} bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/20 hover:opacity-90 focus:ring-blue-400`}
           >
-            <GitHubIcon />
-            Continue with GitHub
+            {mode === "signup" ? "Create account" : "Sign in"}
           </button>
+        </form>
+
+        <button
+          type="button"
+          onClick={() => {
+            setMode(mode === "signup" ? "signin" : "signup");
+            setError("");
+          }}
+          className="mt-3 text-sm text-blue-300 hover:underline"
+        >
+          {mode === "signup"
+            ? "Already have an account? Sign in"
+            : "Need an account? Create one"}
+        </button>
+
+        <div className="my-5 flex items-center gap-3 text-xs uppercase text-white/40">
+          <span className="h-px flex-1 bg-white/15" />
+          or
+          <span className="h-px flex-1 bg-white/15" />
+        </div>
+
+        <div className="flex flex-col gap-3">
           <button
             onClick={googleSignIn}
             disabled={pending}
