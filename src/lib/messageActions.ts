@@ -1,5 +1,6 @@
 import { doc, updateDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase";
+import { nextReactions } from "./reactions";
 
 function messageRef(chatPath: string[], messageId: string) {
   return doc(db, [...chatPath, "messages", messageId].join("/"));
@@ -13,19 +14,9 @@ export function toggleReaction(
   reactions: Record<string, string[]> | undefined,
   uid: string
 ) {
-  const next: Record<string, string[]> = {};
-  for (const [key, uids] of Object.entries(reactions ?? {})) {
-    next[key] = [...uids];
-  }
-
-  const users = new Set(next[emoji] ?? []);
-  if (users.has(uid)) users.delete(uid);
-  else users.add(uid);
-
-  if (users.size === 0) delete next[emoji];
-  else next[emoji] = Array.from(users);
-
-  return updateDoc(messageRef(chatPath, messageId), { reactions: next });
+  return updateDoc(messageRef(chatPath, messageId), {
+    reactions: nextReactions(reactions, emoji, uid),
+  });
 }
 
 export function deleteMessage(chatPath: string[], messageId: string) {
