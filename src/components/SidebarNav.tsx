@@ -13,7 +13,7 @@ const SidebarNav = ({ activeRoomId, onSelectRoom }: SidebarNavProps) => {
     <aside
       className={`${
         open ? "w-64" : "w-20"
-      } flex h-screen shrink-0 flex-col border-r border-blue-500/20 bg-black/50 backdrop-blur-xl duration-300`}
+      } flex h-screen shrink-0 flex-col border-r border-blue-500/20 bg-slate-950/85 backdrop-blur-xl duration-300`}
     >
       <div
         className={`flex items-center gap-2 border-b border-blue-500/20 p-4 ${
