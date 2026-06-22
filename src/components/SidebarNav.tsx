@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ROOMS } from "../rooms";
+import Logo from "./Logo";
 
 interface SidebarNavProps {
   activeRoomId: string;
@@ -22,9 +23,7 @@ const SidebarNav = ({ activeRoomId, onSelectRoom }: SidebarNavProps) => {
       >
         {open && (
           <div className="flex items-center gap-2 overflow-hidden">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 text-lg shadow-lg shadow-blue-500/30">
-              💬
-            </div>
+            <Logo className="h-9 w-9 shrink-0 rounded-xl shadow-lg shadow-blue-500/30" />
             <h1 className="bg-gradient-to-r from-blue-300 to-blue-500 bg-clip-text text-lg font-bold text-transparent">
               Chat App
             </h1>
