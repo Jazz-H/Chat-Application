@@ -23,7 +23,25 @@ service cloud.firestore {
     match /rooms/{roomId}/messages/{messageId} {
       allow read: if request.auth != null;
       allow create: if isValidMessage();
-      allow update, delete: if false;
+
+      // Reactions: any signed-in user may change ONLY the `reactions` field.
+      // Edit: the author may change ONLY `text` (+ `editedAt`), within limits.
+      allow update: if request.auth != null && (
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['reactions'])
+        || (
+          resource.data.uid == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['text', 'editedAt'])
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 500
+        )
+      );
+
+      // Delete: author only.
+      allow delete: if request.auth != null
+                    && resource.data.uid == request.auth.uid;
     }
 
     // Ephemeral "typing" indicators: one doc per user, written only by that

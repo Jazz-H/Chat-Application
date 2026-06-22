@@ -145,6 +145,7 @@ const Chat = ({ roomId }: ChatProps) => {
                     isOwn={isOwn}
                     startGroup={startGroup}
                     endGroup={endGroup}
+                    roomId={roomId}
                   />
                 </div>
               );
