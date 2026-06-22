@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { auth, db } from "../firebase";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 
@@ -16,7 +16,7 @@ const SendMessage = () => {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
 
-  const sendMessage = async (e) => {
+  const sendMessage = async (e: FormEvent) => {
     e.preventDefault();
 
     const text = input.trim();

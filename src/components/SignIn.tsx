@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { auth } from "../firebase";
-
 import {
   GoogleAuthProvider,
   GithubAuthProvider,
@@ -11,14 +10,13 @@ import {
 const style = {
   chatbg: `justify-center mt-40 items-center md:mt-40 h-screen font-bold rounded-md drop-shadow-2xl p-2`,
   heading: `text-white drop-shadow-sm shadow-black text-6xl md:mb-10 md:text-7xl lg:text-9xl uppercase`,
-  logins: `sm:mt-8 mt-4 m-2 my-4 mb-2`,
   error: `mx-auto mt-4 max-w-sm rounded-md bg-red-500/80 px-4 py-2 text-white`,
 };
 
 const SignIn = () => {
   const [error, setError] = useState("");
 
-  const runSignIn = async (fn) => {
+  const runSignIn = async (fn: () => Promise<unknown>) => {
     setError("");
     try {
       await fn();
