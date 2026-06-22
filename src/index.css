@@ -19,3 +19,16 @@ body {
   background-repeat: no-repeat;
   color-scheme: dark;
 }
+
+/* Keep browser-autofilled inputs on-theme instead of the default yellow. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-text-fill-color: #ffffff;
+  -webkit-box-shadow: 0 0 0px 1000px #1e293b inset;
+  caret-color: #ffffff;
+  transition:
+    background-color 600000s 0s,
+    color 600000s 0s;
+}
