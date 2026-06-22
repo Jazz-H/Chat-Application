@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import Message from "./Message";
-import { db } from "../firebase";
+import { auth, db } from "../firebase";
 import {
   query,
   collection,
@@ -9,20 +9,25 @@ import {
   onSnapshot,
 } from "firebase/firestore";
 import type { ChatMessage } from "../types";
+import { isSameDay, formatDaySeparator } from "../utils/time";
 
 const PAGE_SIZE = 25;
 
 type Status = "loading" | "ready" | "error";
 
+interface ChatProps {
+  roomId: string;
+}
+
 const style = {
-  scroll: `flex-1 overflow-y-auto backdrop-blur-sm bg-black/20`,
-  inner: `flex min-h-full flex-col justify-end px-2 py-4`,
+  scroll: `flex-1 overflow-y-auto bg-black/40 backdrop-blur-sm`,
+  inner: `flex min-h-full flex-col justify-end py-4`,
   state: `flex flex-1 flex-col items-center justify-center gap-2 py-16 text-white/70`,
   spinner: `h-6 w-6 animate-spin rounded-full border-2 border-white/30 border-t-white`,
   loadMore: `mx-auto my-3 rounded-full bg-white/10 px-4 py-1 text-sm text-white/80 hover:bg-white/20 disabled:opacity-50`,
 };
 
-const Chat = () => {
+const Chat = ({ roomId }: ChatProps) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [messageLimit, setMessageLimit] = useState(PAGE_SIZE);
   const [status, setStatus] = useState<Status>("loading");
@@ -36,7 +41,7 @@ const Chat = () => {
     // reverse for natural top-to-bottom display. This avoids loading the
     // entire collection on every mount.
     const q = query(
-      collection(db, "ChatMessages"),
+      collection(db, "rooms", roomId, "messages"),
       orderBy("timestamp", "desc"),
       limit(messageLimit)
     );
@@ -61,7 +66,7 @@ const Chat = () => {
     );
 
     return () => unsubscribe();
-  }, [messageLimit]);
+  }, [roomId, messageLimit]);
 
   // Auto-scroll to the bottom only when a genuinely new message arrives,
   // not when older messages are prepended via "load older".
@@ -114,9 +119,36 @@ const Chat = () => {
                 Load older messages
               </button>
             )}
-            {messages.map((message) => (
-              <Message key={message.id} message={message} />
-            ))}
+            {messages.map((message, i) => {
+              const prev = i > 0 ? messages[i - 1] : null;
+              const next = i < messages.length - 1 ? messages[i + 1] : null;
+              const isOwn = message.uid === auth.currentUser?.uid;
+              const showDate =
+                !prev || !isSameDay(prev.timestamp, message.timestamp);
+              const startGroup = showDate || prev?.uid !== message.uid;
+              const endGroup =
+                !next ||
+                next.uid !== message.uid ||
+                !isSameDay(message.timestamp, next.timestamp);
+
+              return (
+                <div key={message.id}>
+                  {showDate && (
+                    <div className="my-4 flex items-center justify-center">
+                      <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white/60">
+                        {formatDaySeparator(message.timestamp)}
+                      </span>
+                    </div>
+                  )}
+                  <Message
+                    message={message}
+                    isOwn={isOwn}
+                    startGroup={startGroup}
+                    endGroup={endGroup}
+                  />
+                </div>
+              );
+            })}
           </>
         )}
         <span ref={bottomRef}></span>

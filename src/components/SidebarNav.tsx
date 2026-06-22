@@ -1,79 +1,77 @@
 import { useState } from "react";
+import { ROOMS } from "../rooms";
 
-interface MenuItem {
-  title: string;
-  src: string;
+interface SidebarNavProps {
+  activeRoomId: string;
+  onSelectRoom: (roomId: string) => void;
 }
 
-const MENUS: MenuItem[] = [
-  {
-    title: "Inbox",
-    src: "https://img.icons8.com/cotton/50/000000/secured-letter--v2.png",
-  },
-  {
-    title: "Account",
-    src: "https://img.icons8.com/cotton/50/null/web-account.png",
-  },
-  {
-    title: "Forums",
-    src: "https://img.icons8.com/cotton/50/000000/filled-chat--v1.png",
-  },
-  {
-    title: "Search",
-    src: "https://img.icons8.com/color/50/000000/search--v1.png",
-  },
-  {
-    title: "Setting",
-    src: "https://img.icons8.com/cotton/50/null/settings--v1.png",
-  },
-];
-
-const SidebarNav = () => {
+const SidebarNav = ({ activeRoomId, onSelectRoom }: SidebarNavProps) => {
   const [open, setOpen] = useState(true);
 
   return (
     <aside
       className={`${
         open ? "w-64" : "w-20"
-      } relative h-screen shrink-0 bg-slate-700 p-5 pt-8 duration-300`}
+      } flex h-screen shrink-0 flex-col border-r border-blue-500/20 bg-black/50 backdrop-blur-xl duration-300`}
     >
-      <button
-        type="button"
-        aria-label={open ? "Collapse sidebar" : "Expand sidebar"}
-        onClick={() => setOpen(!open)}
-        className={`absolute -right-3 top-9 flex h-7 w-7 items-center justify-center rounded-full border-2 border-slate-700 bg-white text-slate-700 ${
-          !open && "rotate-180"
+      <div
+        className={`flex items-center gap-2 border-b border-blue-500/20 p-4 ${
+          open ? "justify-between" : "justify-center"
         }`}
       >
-        ‹
-      </button>
-
-      <div className="flex items-center gap-x-4">
-        <span className="text-3xl">💬</span>
-        <h1
-          className={`origin-left text-2xl font-bold text-white duration-200 ${
-            !open && "scale-0"
-          }`}
+        {open && (
+          <div className="flex items-center gap-2 overflow-hidden">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 text-lg shadow-lg shadow-blue-500/30">
+              💬
+            </div>
+            <h1 className="bg-gradient-to-r from-blue-300 to-blue-500 bg-clip-text text-lg font-bold text-transparent">
+              Chat App
+            </h1>
+          </div>
+        )}
+        <button
+          type="button"
+          aria-label={open ? "Collapse sidebar" : "Expand sidebar"}
+          onClick={() => setOpen(!open)}
+          className="rounded-lg p-2 text-lg leading-none text-blue-200/70 hover:bg-blue-500/10 hover:text-white"
         >
-          Chat App
-        </h1>
+          {open ? "«" : "»"}
+        </button>
       </div>
 
-      <hr className="mt-6 rounded-md border-2 border-white/30" />
-
-      <ul className="pt-6">
-        {MENUS.map((menu) => (
-          <li
-            key={menu.title}
-            className="mt-2 flex cursor-pointer items-center gap-x-4 rounded-md p-2 text-lg font-medium text-gray-200 hover:bg-slate-600"
-          >
-            <img src={menu.src} alt={menu.title} className="h-6 w-6 shrink-0" />
-            <span className={`${!open && "hidden"} origin-left duration-200`}>
-              {menu.title}
-            </span>
-          </li>
-        ))}
-      </ul>
+      <nav className="flex-1 overflow-y-auto p-3">
+        {open && (
+          <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-blue-200/40">
+            Channels
+          </p>
+        )}
+        <ul className="space-y-1">
+          {ROOMS.map((room) => {
+            const isActive = room.id === activeRoomId;
+            return (
+              <li key={room.id}>
+                <button
+                  type="button"
+                  onClick={() => onSelectRoom(room.id)}
+                  aria-current={isActive ? "page" : undefined}
+                  title={room.name}
+                  className={`flex w-full items-center rounded-xl p-2.5 text-sm font-medium transition ${
+                    open ? "gap-3" : "justify-center"
+                  } ${
+                    isActive
+                      ? "bg-gradient-to-r from-blue-600/40 to-blue-500/20 text-white ring-1 ring-inset ring-blue-400/30"
+                      : "text-white/60 hover:bg-white/5 hover:text-white"
+                  }`}
+                >
+                  <span className="text-lg">{room.icon}</span>
+                  {open && <span className="truncate">{room.name}</span>}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
     </aside>
   );
 };
