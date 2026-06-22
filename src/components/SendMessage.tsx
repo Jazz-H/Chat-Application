@@ -147,7 +147,7 @@ const SendMessage = ({ chatPath, placeholder }: SendMessageProps) => {
           onClick={() => fileInput.current?.click()}
           disabled={sending}
           aria-label="Attach image"
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white/60 hover:bg-white/10 hover:text-white disabled:opacity-40"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white/60 hover:bg-white/10 hover:text-white disabled:opacity-40 sm:h-10 sm:w-10"
         >
           <ImageIcon />
         </button>
@@ -171,7 +171,7 @@ const SendMessage = ({ chatPath, placeholder }: SendMessageProps) => {
           type="submit"
           disabled={sending || (!input.trim() && !file)}
           aria-label="Send message"
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-700 text-white shadow-lg shadow-blue-500/30 transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-700 text-white shadow-lg shadow-blue-500/30 transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 sm:h-11 sm:w-11"
         >
           {sending ? (
             <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
