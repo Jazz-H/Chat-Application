@@ -53,7 +53,7 @@ const SendMessage = ({ roomId }: SendMessageProps) => {
   return (
     <form
       onSubmit={sendMessage}
-      className="relative flex shrink-0 items-center gap-2 border-t border-white/10 bg-slate-900/70 p-3 backdrop-blur-xl"
+      className="relative flex shrink-0 items-center gap-2 border-t border-blue-500/20 bg-black/50 p-3 backdrop-blur-xl"
     >
       {error && (
         <p className="absolute -top-9 left-3 right-3 rounded-md bg-red-500/90 px-3 py-1 text-sm text-white">
@@ -63,7 +63,7 @@ const SendMessage = ({ roomId }: SendMessageProps) => {
       <input
         value={input}
         onChange={(e) => setInput(e.target.value)}
-        className="flex-1 rounded-full bg-white/10 px-4 py-2.5 text-base text-white placeholder-white/40 outline-none focus:ring-2 focus:ring-cyan-400"
+        className="flex-1 rounded-full bg-white/5 px-4 py-2.5 text-base text-white placeholder-white/40 outline-none ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-blue-400"
         type="text"
         maxLength={MAX_LENGTH}
         placeholder={`Message #${roomId}`}
@@ -74,7 +74,7 @@ const SendMessage = ({ roomId }: SendMessageProps) => {
         type="submit"
         disabled={sending || !input.trim()}
         aria-label="Send message"
-        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 text-white shadow-lg transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-700 text-white shadow-lg shadow-blue-500/30 transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
       >
         <SendIcon />
       </button>

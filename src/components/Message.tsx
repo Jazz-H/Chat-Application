@@ -5,8 +5,8 @@ import type { ChatMessage } from "../types";
 
 const style = {
   bubble: `inline-block max-w-full break-words rounded-2xl px-4 py-2 shadow-md`,
-  sent: `bg-cyan-400 text-black rounded-br-sm`,
-  received: `bg-gray-200 text-black rounded-bl-sm`,
+  sent: `bg-blue-600 text-white rounded-br-sm`,
+  received: `bg-slate-800 text-gray-100 ring-1 ring-white/5 rounded-bl-sm`,
 };
 
 interface MessageProps {
