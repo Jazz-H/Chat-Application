@@ -59,7 +59,7 @@ const SidebarNav = () => {
             Chat App
           </h1>
         </div>
-        <hr class="mt-6 border-2 rounded-md text-white" />
+        <hr className="mt-6 border-2 rounded-md text-white" />
         <ul className="pt-6">
           {Menus.map((Menu, index) => (
             <li
