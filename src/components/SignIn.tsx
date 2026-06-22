@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { auth } from "../firebase";
+import Logo from "./Logo";
 import {
   GoogleAuthProvider,
   GithubAuthProvider,
@@ -78,9 +79,7 @@ const SignIn = () => {
     <div className="flex min-h-screen items-center justify-center p-4">
       <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-slate-900/60 p-8 text-center shadow-2xl backdrop-blur-xl">
         <div className="mb-6">
-          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-500 text-3xl shadow-lg">
-            💬
-          </div>
+          <Logo className="mx-auto mb-3 h-14 w-14 rounded-2xl shadow-lg" />
           <h1 className="bg-gradient-to-r from-cyan-300 to-blue-400 bg-clip-text text-3xl font-extrabold uppercase tracking-wide text-transparent">
             Chat App
           </h1>
