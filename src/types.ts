@@ -12,4 +12,6 @@ export interface ChatMessage {
   reactions?: Record<string, string[]>;
   // set when the author edits the message
   editedAt?: Timestamp | null;
+  // download URL when the message includes an image
+  imageUrl?: string;
 }

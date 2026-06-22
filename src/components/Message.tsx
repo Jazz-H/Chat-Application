@@ -181,13 +181,31 @@ const Message = ({
             </form>
           ) : (
             <div
-              className={`${style.bubble} ${isOwn ? style.sent : style.received} ${tail}`}
+              className={`flex flex-col gap-1 ${
+                isOwn ? "items-end" : "items-start"
+              }`}
             >
-              {message.text}
-              {message.editedAt && (
-                <span className="ml-1 align-baseline text-[10px] opacity-60">
-                  (edited)
-                </span>
+              {message.imageUrl && (
+                <a href={message.imageUrl} target="_blank" rel="noreferrer">
+                  <img
+                    src={message.imageUrl}
+                    alt="Shared attachment"
+                    loading="lazy"
+                    className="max-h-64 max-w-[16rem] rounded-xl object-cover"
+                  />
+                </a>
+              )}
+              {message.text && (
+                <div
+                  className={`${style.bubble} ${isOwn ? style.sent : style.received} ${tail}`}
+                >
+                  {message.text}
+                  {message.editedAt && (
+                    <span className="ml-1 align-baseline text-[10px] opacity-60">
+                      (edited)
+                    </span>
+                  )}
+                </div>
               )}
             </div>
           )}
