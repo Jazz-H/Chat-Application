@@ -22,6 +22,8 @@ interface SidebarNavProps {
 const SidebarNav = ({ mobileOpen, onClose }: SidebarNavProps) => {
   const [open, setOpen] = useState(true);
   const [dms, setDms] = useState<Conversation[]>([]);
+  const [showAllDms, setShowAllDms] = useState(false);
+  const DM_LIMIT = 10;
   const { active, openRoom, openDm } = useChat();
   const myUid = auth.currentUser?.uid;
 
@@ -143,7 +145,7 @@ const SidebarNav = ({ mobileOpen, onClose }: SidebarNavProps) => {
               </p>
             )}
             <ul className="mt-2 space-y-1">
-              {dms.map((dm) => {
+              {(showAllDms ? dms : dms.slice(0, DM_LIMIT)).map((dm) => {
                 const isActive = active.kind === "dm" && active.id === dm.id;
                 return (
                   <li key={dm.id}>
@@ -164,6 +166,15 @@ const SidebarNav = ({ mobileOpen, onClose }: SidebarNavProps) => {
                 );
               })}
             </ul>
+            {dms.length > DM_LIMIT && open && (
+              <button
+                type="button"
+                onClick={() => setShowAllDms((v) => !v)}
+                className="mt-1 w-full px-2 text-left text-xs text-blue-300/60 hover:text-blue-300"
+              >
+                {showAllDms ? "Show less" : `+${dms.length - DM_LIMIT} more`}
+              </button>
+            )}
           </>
         )}
       </nav>

@@ -101,8 +101,13 @@ function messageForCode(code: string): string {
   }
 }
 
+const SpinnerIcon = () => (
+  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+);
+
 const SignIn = () => {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -147,10 +152,9 @@ const SignIn = () => {
           email,
           password
         );
-        // Give email users a sensible display name (the part before "@").
-        const displayName = email.split("@")[0];
-        if (displayName) {
-          await updateProfile(cred.user, { displayName });
+        const name = displayName.trim() || email.split("@")[0];
+        if (name) {
+          await updateProfile(cred.user, { displayName: name });
         }
       } else {
         await signInWithEmailAndPassword(auth, email, password);
@@ -190,6 +194,17 @@ const SignIn = () => {
           onSubmit={handleEmailSubmit}
           className="flex flex-col gap-3 text-left"
         >
+          {mode === "signup" && (
+            <input
+              type="text"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              placeholder="Display name"
+              autoComplete="name"
+              maxLength={50}
+              className={inputClass}
+            />
+          )}
           <input
             type="email"
             value={email}
@@ -225,7 +240,13 @@ const SignIn = () => {
             disabled={pending}
             className={`${buttonBase} bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/20 hover:opacity-90 focus:ring-blue-400`}
           >
-            {mode === "signup" ? "Create account" : "Sign in"}
+            {pending ? (
+              <SpinnerIcon />
+            ) : mode === "signup" ? (
+              "Create account"
+            ) : (
+              "Sign in"
+            )}
           </button>
         </form>
 
@@ -234,6 +255,7 @@ const SignIn = () => {
           onClick={() => {
             setMode(mode === "signup" ? "signin" : "signup");
             setError("");
+            setDisplayName("");
           }}
           className="mt-3 text-sm text-blue-300 hover:underline"
         >

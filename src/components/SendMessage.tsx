@@ -1,4 +1,10 @@
-import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
+import {
+  useRef,
+  useState,
+  useEffect,
+  type ChangeEvent,
+  type FormEvent,
+} from "react";
 import { auth, db } from "../firebase";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { useTyping } from "../hooks/useTyping";
@@ -41,7 +47,15 @@ const SendMessage = ({ chatPath, placeholder }: SendMessageProps) => {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
+  const previewRef = useRef<string | null>(null);
+  previewRef.current = preview;
   const { notifyTyping, clearTyping } = useTyping(chatPath);
+
+  useEffect(() => {
+    return () => {
+      if (previewRef.current) URL.revokeObjectURL(previewRef.current);
+    };
+  }, []);
 
   const pickImage = (e: ChangeEvent<HTMLInputElement>) => {
     const chosen = e.target.files?.[0];

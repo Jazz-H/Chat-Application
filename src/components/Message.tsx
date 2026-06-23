@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState, useRef, type FormEvent } from "react";
 import { auth } from "../firebase";
 import { formatClockTime } from "../utils/time";
 import Avatar from "./Avatar";
@@ -97,11 +97,19 @@ const Message = ({
   const [editText, setEditText] = useState(message.text);
   const [picker, setPicker] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [actionError, setActionError] = useState("");
+  const errorTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showError = (msg: string) => {
+    setActionError(msg);
+    if (errorTimer.current) clearTimeout(errorTimer.current);
+    errorTimer.current = setTimeout(() => setActionError(""), 4000);
+  };
 
   const react = (emoji: string) => {
     if (uid) {
       toggleReaction(chatPath, message.id, emoji, message.reactions, uid).catch(
-        () => undefined
+        () => showError("Couldn't add reaction.")
       );
     }
     setPicker(false);
@@ -110,7 +118,9 @@ const Message = ({
   const remove = () => setConfirmOpen(true);
 
   const confirmDelete = () => {
-    deleteMessage(chatPath, message.id).catch(() => undefined);
+    deleteMessage(chatPath, message.id).catch(() =>
+      showError("Couldn't delete message.")
+    );
     setConfirmOpen(false);
   };
 
@@ -118,7 +128,9 @@ const Message = ({
     e.preventDefault();
     const text = editText.trim();
     if (text && text !== message.text) {
-      editMessage(chatPath, message.id, text).catch(() => undefined);
+      editMessage(chatPath, message.id, text).catch(() =>
+        showError("Couldn't save edit.")
+      );
     }
     setEditing(false);
   };
@@ -306,6 +318,12 @@ const Message = ({
               );
             })}
           </div>
+        )}
+
+        {actionError && (
+          <p className="mt-1 rounded px-2 py-0.5 text-[11px] text-red-400">
+            {actionError}
+          </p>
         )}
 
         {endGroup && (
