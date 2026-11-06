@@ -14,4 +14,7 @@ export const ROOMS: Room[] = [
   { id: "music", name: "Music", icon: "🎵" },
 ];
 
-export const DEFAULT_ROOM_ID = ROOMS[0].id;
+// The channel a new session opens on. Named here, next to the array, so the
+// "first room wins" coupling lives in one place rather than as a bare
+// ROOMS[0] index at the call site.
+export const DEFAULT_ROOM: Room = ROOMS[0];

@@ -1,12 +1,12 @@
 import { useState, type ReactNode } from "react";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "../firebase";
-import { ROOMS, type Room } from "../rooms";
+import { DEFAULT_ROOM, type Room } from "../rooms";
 import { ChatContext, dmId, type ActiveChat } from "./chat";
 
 const ChatProvider = ({ children }: { children: ReactNode }) => {
   const [active, setActive] = useState<ActiveChat>(() => {
-    const room = ROOMS[0];
+    const room = DEFAULT_ROOM;
     return { kind: "room", id: room.id, name: room.name, icon: room.icon };
   });
 
