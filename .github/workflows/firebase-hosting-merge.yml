@@ -23,6 +23,36 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm run build
+
+      # Firestore rules are NOT deployed by action-hosting-deploy, which
+      # publishes hosting only. Without this step firestore.rules can be
+      # committed and silently never take effect, so the committed file and the
+      # live rules drift apart — which is exactly what had happened before
+      # 2026-11-06.
+      #
+      # Deliberately ordered BEFORE the hosting deploy: the rules are the
+      # security boundary, so if this step fails the job stops and the live site
+      # still matches the rules that are actually live. The reverse order would
+      # ship new UI against old rules.
+      #
+      # If this step fails with a 403 / PERMISSION_DENIED, the service account
+      # needs the "Firebase Rules Admin" role (roles/firebaserules.admin). The
+      # account that `firebase init hosting:github` generates is scoped to
+      # hosting and does not include it by default. Grant it in Google Cloud
+      # console → IAM, on project chatappdemo-e1b26.
+      - name: Deploy Firestore rules
+        env:
+          FIREBASE_SERVICE_ACCOUNT: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_PROJECT_170432343267614530 }}'
+        run: |
+          SA="$(mktemp)"
+          trap 'rm -f "$SA"' EXIT
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$SA"
+          GOOGLE_APPLICATION_CREDENTIALS="$SA" \
+            npx --yes firebase-tools@15.34.2 deploy \
+              --only firestore:rules \
+              --project chatappdemo-e1b26 \
+              --non-interactive
+
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
