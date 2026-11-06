@@ -93,6 +93,16 @@ const SendMessage = ({ chatPath, placeholder }: SendMessageProps) => {
       return;
     }
 
+    // Guests (the "Continue as Guest" button) may browse the public channels
+    // but not post in them — see isGuest() in firestore.rules. Caught here so
+    // they get an accurate message rather than the generic "please try again"
+    // below, which would invite retrying something that cannot succeed.
+    // Direct messages are unaffected: those are gated on mutual membership.
+    if (user.isAnonymous && chatPath[0] === "rooms") {
+      setError("Guests can read the channels. Sign in to post.");
+      return;
+    }
+
     setSending(true);
     setError("");
 
